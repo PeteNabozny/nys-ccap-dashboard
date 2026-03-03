@@ -374,7 +374,8 @@ function enableZoom(canvasId, chart) {
 }
 // ===================== SUMMARY CARDS =====================
 (function buildCards() {
-  const latest = DATA.statusByMonth.filter(d => d.YearMonth === 'Jan 2026');
+  const latestStatusYM = DATA.statusByMonth[DATA.statusByMonth.length-1]?.YearMonth || '';
+  const latest = DATA.statusByMonth.filter(d => d.YearMonth === latestStatusYM);
   const open = latest.find(d => d.Status === 'Open')?.Count || 0;
   const closedNo = latest.find(d => d.Status === 'Closed, No Wait List')?.Count || 0;
   const closedWl = latest.find(d => d.Status === 'Closed, Operating Wait List')?.Count || 0;
@@ -382,7 +383,6 @@ function enableZoom(canvasId, chart) {
 
   const lastEnroll = DATA.statewideEnrollment[DATA.statewideEnrollment.length - 1];
   const latestEnrollYM = lastEnroll.YearMonth;
-  const latestStatusYM = DATA.statusByMonth[DATA.statusByMonth.length-1]?.YearMonth || '';
   document.getElementById('enrollColHeader').textContent = latestEnrollYM + ' Enrollment';
 
   // Year-over-year comparison helpers
