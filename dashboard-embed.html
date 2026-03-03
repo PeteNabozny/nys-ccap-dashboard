@@ -346,10 +346,12 @@ const statusLabel = s => {
 };
 
 // ===================== ZOOM SETUP =====================
-Chart.defaults.plugins.zoom = {
-  zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'xy' },
-  pan: { enabled: true, mode: 'xy' }
-};
+const _zd = Chart.defaults.plugins.zoom;
+_zd.zoom.wheel.enabled = true;
+_zd.zoom.pinch.enabled = true;
+_zd.zoom.mode = 'xy';
+_zd.pan.enabled = true;
+_zd.pan.mode = 'xy';
 function enableZoom(canvasId, chart) {
   const h2 = document.getElementById(canvasId).closest('.chart-card').querySelector('h2');
   let btn = h2.querySelector('.zoom-reset');
@@ -1039,8 +1041,8 @@ function setMapMode(mode) {
       }
     }
   });
-})();
   enableZoom('scatterChart', _scatterChart);
+})();
 
 
       // Auto-resize: report height to parent iframe
