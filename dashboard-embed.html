@@ -348,10 +348,12 @@ const statusLabel = s => {
 // ===================== ZOOM SETUP =====================
 const _zd = Chart.defaults.plugins.zoom;
 _zd.zoom.wheel.enabled = true;
+_zd.zoom.wheel.speed = 0.05;
 _zd.zoom.pinch.enabled = true;
 _zd.zoom.mode = 'xy';
 _zd.pan.enabled = true;
 _zd.pan.mode = 'xy';
+_zd.limits = { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } };
 function enableZoom(canvasId, chart) {
   const h2 = document.getElementById(canvasId).closest('.chart-card').querySelector('h2');
   let btn = h2.querySelector('.zoom-reset');
