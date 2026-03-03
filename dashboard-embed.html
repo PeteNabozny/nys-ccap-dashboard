@@ -483,10 +483,12 @@ window.setCountyCount = function(n, btn) {
   const allEntries = Object.entries(DATA.latestCountyEnrollment).sort((a,b) => b[1]-a[1]);
   const entries = n ? allEntries.slice(0, n) : allEntries;
   const canvas = document.getElementById('countyEnrollChart');
-  canvas.height = Math.max(260, entries.length * 26);
+  const wrap = canvas.closest('.chart-wrap');
+  wrap.style.height = Math.max(300, entries.length * 30) + 'px';
   if (_countyEnrollChart) {
     _countyEnrollChart.data.labels = entries.map(e => e[0]);
     _countyEnrollChart.data.datasets[0].data = entries.map(e => e[1]);
+    _countyEnrollChart.resize();
     _countyEnrollChart.update();
     return;
   }
@@ -503,8 +505,8 @@ window.setCountyCount = function(n, btn) {
       plugins: { legend: { display: false },
                  tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.parsed.x) } } },
       scales: {
-        x: { beginAtZero: true, ticks: { callback: v => fmt(v), font: { size: 10 } } },
-        y: { ticks: { font: { size: 10 } } }
+        x: { beginAtZero: true, ticks: { callback: v => fmt(v), font: { size: 12 } } },
+        y: { ticks: { font: { size: 12 } } }
       }
     }
   });
