@@ -271,6 +271,7 @@
         <option value="Closed, No Wait List">Closed, No Wait List</option>
         <option value="Closed, Operating Wait List">Closed, Operating Wait List</option>
       </select>
+      <button onclick="exportTableCSV()" style="padding:7px 14px;border:1px solid #dce3ea;border-radius:6px;background:#fff;color:#475874;cursor:pointer;font-size:0.82rem;font-family:inherit;white-space:nowrap;">&#8595; Export CSV</button>
     </div>
     <div style="overflow-x:auto;">
       <table id="countyTable">
@@ -655,6 +656,41 @@ function renderTable() {
       <td>${fpc}</td>
     </tr>`;
   }).join('');
+}
+
+function exportTableCSV() {
+  const lastSt = DATA.statewideEnrollment[DATA.statewideEnrollment.length-1];
+  const enrollHeader = document.getElementById('enrollColHeader').textContent;
+  const headers = [
+    'County', 'Month', 'Status', 'Wait List Duration', 'Families on Wait List',
+    enrollHeader, 'Eligible Children Est.', '2025-26 Allocation ($)', '$ per Eligible Child'
+  ];
+  const esc = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const allRows = [...DATA.latestCountyStatus].sort((a,b) => a.County.localeCompare(b.County));
+  const csvRows = [headers.join(',')];
+  allRows.forEach(d => {
+    const ek = d.County === 'New York City' ? null : (d.County === 'St. Lawrence' ? 'Saint Lawrence' : d.County);
+    const enrollment = ek ? (DATA.latestCountyEnrollment[ek] ?? '') : (lastSt.NYC ?? '');
+    const ccbg = DATA.ccbgByCounty[d.County];
+    csvRows.push([
+      esc(d.County),
+      esc(d.Month + ' ' + d.Year),
+      esc(d.Status),
+      esc(d.HowLongFamiliesOnWaitingList || ''),
+      esc(d.NumberOfFamiliesOnWaitingList || ''),
+      enrollment,
+      ccbg ? Math.ceil(ccbg.eligible) : '',
+      ccbg ? ccbg.allocation.toFixed(2) : '',
+      ccbg ? Math.round(ccbg.fundingPerChild) : '',
+    ].join(','));
+  });
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ccap-county-detail.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 document.getElementById('search').addEventListener('input', renderTable);
