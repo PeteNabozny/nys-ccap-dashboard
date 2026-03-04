@@ -188,7 +188,9 @@
       <p class="sub">Average monthly enrollment by county &mdash; Dec 2025 (Total case type) &mdash; excludes New York City</p>
       <div class="count-btns">
         <span>Show:</span>
-        <button class="count-btn active" onclick="setCountyCount(20,this)">Top 20</button>
+        <button class="count-btn active" onclick="setCountyCount(10,this)">Top 10</button>
+        <button class="count-btn" onclick="setCountyCount(20,this)">Top 20</button>
+        <button class="count-btn" onclick="setCountyCount(30,this)">Top 30</button>
         <button class="count-btn" onclick="setCountyCount(null,this)">All</button>
       </div>
       <div class="chart-wrap"><canvas id="countyEnrollChart" height="520"></canvas></div>
@@ -305,6 +307,9 @@
     </a>
   </div>
   Data sources: CCAP Enrollment Closure Status by Month &bull; County Average Subsidy Enrollment by Month &bull; Eligible Children and CCBG Funding 2025-26 &mdash; The Children&rsquo;s Agenda
+  <div style="max-width:800px;margin:12px auto 0;line-height:1.5;">
+    Child Care Assistance Program data for this dashboard was obtained from the <a href="https://ocfs.ny.gov/programs/childcare/data/" target="_blank" rel="noopener" style="color:#8a9aab;">Office of Children and Family Services website</a>. Estimates of the number of children eligible for assistance were developed by The Children&rsquo;s Agenda using American Community Survey data.
+  </div>
 </footer>
 
 <script>
@@ -347,14 +352,7 @@ const statusLabel = s => {
 };
 
 // ===================== ZOOM SETUP =====================
-const _zd = Chart.defaults.plugins.zoom;
-_zd.zoom.wheel.enabled = true;
-_zd.zoom.wheel.speed = 0.05;
-_zd.zoom.pinch.enabled = true;
-_zd.zoom.mode = 'xy';
-_zd.pan.enabled = true;
-_zd.pan.mode = 'xy';
-_zd.limits = { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } };
+// Zoom disabled globally; enableZoom() opts specific charts in.
 function enableZoom(canvasId, chart) {
   const h2 = document.getElementById(canvasId).closest('.chart-card').querySelector('h2');
   let btn = h2.querySelector('.zoom-reset');
@@ -365,13 +363,15 @@ function enableZoom(canvasId, chart) {
     h2.appendChild(btn);
   }
   btn.onclick = () => { chart.resetZoom(); btn.style.display = 'none'; };
-  const zp = chart.options.plugins && chart.options.plugins.zoom;
-  if (zp) {
-    if (!zp.zoom) zp.zoom = {};
-    if (!zp.pan) zp.pan = {};
-    zp.zoom.onZoom = () => { btn.style.display = 'inline-block'; };
-    zp.pan.onPan = () => { btn.style.display = 'inline-block'; };
-  }
+  if (!chart.options.plugins) chart.options.plugins = {};
+  chart.options.plugins.zoom = {
+    zoom: { wheel: { enabled: true, speed: 0.05 }, pinch: { enabled: true }, mode: 'xy',
+            onZoom: () => { btn.style.display = 'inline-block'; } },
+    pan:  { enabled: true, mode: 'xy',
+            onPan:  () => { btn.style.display = 'inline-block'; } },
+    limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+  };
+  chart.update();
 }
 // ===================== SUMMARY CARDS =====================
 (function buildCards() {
@@ -474,7 +474,6 @@ function enableZoom(canvasId, chart) {
       }
     }
   });
-  enableZoom('statusChart', _statusChart);
 })();
 
 // ===================== TOP COUNTY ENROLLMENT BAR =====================
@@ -488,11 +487,8 @@ window.setCountyCount = function(n, btn) {
   const wrap = canvas.closest('.chart-wrap');
   wrap.style.height = Math.max(300, entries.length * 30) + 'px';
   if (_countyEnrollChart) {
-    _countyEnrollChart.data.labels = entries.map(e => e[0]);
-    _countyEnrollChart.data.datasets[0].data = entries.map(e => e[1]);
-    _countyEnrollChart.resize();
-    _countyEnrollChart.update();
-    return;
+    _countyEnrollChart.destroy();
+    _countyEnrollChart = null;
   }
   _countyEnrollChart = new Chart(canvas, {
     type: 'bar',
@@ -512,9 +508,8 @@ window.setCountyCount = function(n, btn) {
       }
     }
   });
-  enableZoom('countyEnrollChart', _countyEnrollChart);
 };
-setCountyCount(20);
+setCountyCount(10);
 
 // ===================== STATEWIDE ENROLLMENT TREND =====================
 (function buildStatewideChart() {
@@ -545,7 +540,6 @@ setCountyCount(20);
       }
     }
   });
-  enableZoom('statewideChart', _statewideChart);
 })();
 
 // ===================== LI vs TA CHART =====================
@@ -576,7 +570,6 @@ setCountyCount(20);
       }
     }
   });
-  enableZoom('liTaChart', _liTaChart);
 })();
 
 // ===================== NYC vs ROS CHART =====================
@@ -606,7 +599,6 @@ setCountyCount(20);
       }
     }
   });
-  enableZoom('nycRosChart', _nycRosChart);
 })();
 
 // ===================== COUNTY TABLE =====================
@@ -898,7 +890,6 @@ function setMapMode(mode) {
       }
     }
   });
-  enableZoom('countyHistoryChart', chart);
 
   window.countyHistoryUpdate = function() {
     const checked = [...container.querySelectorAll('input:checked')].map(i => i.value);
