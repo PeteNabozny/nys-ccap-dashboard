@@ -131,6 +131,14 @@
   .map-legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; font-size: 0.78rem; color: #445566; margin-top: 12px; }
   #legendFunding { display: none; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; }
   #legendFunding .grad-bar { width: 180px; height: 12px; border-radius: 3px; background: linear-gradient(to right, #d73027, #fee08b, #1a9850); display: inline-block; vertical-align: middle; }
+
+  /* Tabs */
+  .tab-bar { display: flex; border-bottom: 2px solid #dce3ea; margin-bottom: 24px; gap: 0; }
+  .tab-btn { padding: 12px 28px; background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px; cursor: pointer; font-size: 1rem; font-weight: 600; color: #6b7c8d; font-family: inherit; transition: color .15s, border-color .15s; }
+  .tab-btn:hover { color: #475874; }
+  .tab-btn.active { color: #475874; border-bottom-color: #475874; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
 </style>
 </head>
 <body>
@@ -139,35 +147,39 @@
 
 <div class="container">
 
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="enrollment" onclick="showTab('enrollment')">Enrollment</button>
+    <button class="tab-btn" data-tab="funding" onclick="showTab('funding')">Funding</button>
+    <button class="tab-btn" data-tab="lookup" onclick="showTab('lookup')">County Lookup</button>
+  </div>
+
+  <!-- Tab 1: Enrollment -->
+  <div class="tab-pane active" id="tab-enrollment">
+
   <!-- Summary Cards: CCAP -->
   <div class="section-label">Child Care Assistance Program Status &amp; Enrollment</div>
   <div class="cards" id="cards"></div>
 
-  <!-- Summary Cards: CCBG -->
-  <div class="section-label" style="margin-top:20px;">2025-26 Child Care Block Grant (CCBG)</div>
-  <div class="cards" id="ccbgCards"></div>
-
-  <!-- Map -->
+  <!-- Map: Status -->
   <div class="grid-1" style="margin-bottom:20px;">
     <div class="chart-card">
       <h2>County Map</h2>
-      <p class="sub">Hover over a county for details. Toggle between views below.</p>
-      <div class="map-toggle-wrap">
-        <button class="map-toggle active" data-mode="status" onclick="setMapMode('status')">Child Care Assistance Program Status</button>
-        <button class="map-toggle" data-mode="funding" onclick="setMapMode('funding')">Funding per Eligible Child</button>
-      </div>
-      <div id="mapContainer" style="width:100%;"></div>
-      <div id="legendStatus" class="map-legend">
-        <span><span style="display:inline-block;width:12px;height:12px;background:#77a464;border-radius:2px;margin-right:5px;vertical-align:middle;"></span>Open</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#c0392b;border-radius:2px;margin-right:5px;vertical-align:middle;"></span>Closed, No Wait List</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#ea734e;border-radius:2px;margin-right:5px;vertical-align:middle;"></span>Closed, Operating Wait List</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#b0bec5;border-radius:2px;margin-right:5px;vertical-align:middle;"></span>No Data</span>
-      </div>
-      <div id="legendFunding">
-        <span style="font-size:0.75rem;color:#445566;">$256 (low)</span>
-        <span class="grad-bar"></span>
-        <span style="font-size:0.75rem;color:#445566;">$2,915 (high)</span>
-        <span style="font-size:0.72rem;color:#8a9aab;margin-left:8px;">&#9660; State avg: $1,625/child</span>
+      <p class="sub">Hover over a county for details.</p>
+      <div id="mapSlotEnroll">
+        <div id="mapContainer" style="width:100%;"></div>
+        <div id="legendStatus" class="map-legend">
+          <span><span style="display:inline-block;width:12px;height:12px;background:#77a464;border-radius:2px;margin-right:5px;vertical-align:middle;"></span>Open</span>
+          <span><span style="display:inline-block;width:12px;height:12px;background:#c0392b;border-radius:2px;margin-right:5px;vertical-align:middle;"></span>Closed, No Wait List</span>
+          <span><span style="display:inline-block;width:12px;height:12px;background:#ea734e;border-radius:2px;margin-right:5px;vertical-align:middle;"></span>Closed, Operating Wait List</span>
+          <span><span style="display:inline-block;width:12px;height:12px;background:#b0bec5;border-radius:2px;margin-right:5px;vertical-align:middle;"></span>No Data</span>
+        </div>
+        <div id="legendFunding">
+          <span style="font-size:0.75rem;color:#445566;">$256 (low)</span>
+          <span class="grad-bar"></span>
+          <span style="font-size:0.75rem;color:#445566;">$2,915 (high)</span>
+          <span style="font-size:0.72rem;color:#8a9aab;margin-left:8px;">&#9660; State avg: $1,625/child</span>
+        </div>
       </div>
     </div>
   </div>
@@ -235,7 +247,62 @@
     </div>
   </div>
 
-  <!-- Row 4: CCBG Funding per Eligible Child (full width) -->
+  <!-- Row 4: Coverage Rate (enrollment tab) -->
+  <div class="grid-1">
+    <div class="chart-card">
+      <h2>Child Care Assistance Program Coverage Rate by County</h2>
+      <p class="sub">Dec 2025 enrolled children as % of 2025-26 eligible estimate &mdash; all counties including New York City</p>
+      <div class="chart-wrap"><canvas id="coverageChart" height="380"></canvas></div>
+    </div>
+  </div>
+
+  </div><!-- end tab-enrollment -->
+
+  <!-- Tab 2: Funding -->
+  <div class="tab-pane" id="tab-funding">
+
+  <!-- Summary Cards: CCBG -->
+  <div class="section-label">2025-26 Child Care Block Grant (CCBG)</div>
+  <div class="cards" id="ccbgCards"></div>
+
+  <!-- Map: Funding -->
+  <div class="grid-1" style="margin-bottom:20px;">
+    <div class="chart-card">
+      <h2>County Funding Map</h2>
+      <p class="sub">Hover over a county for details.</p>
+      <div id="mapSlotFund"></div>
+    </div>
+  </div>
+
+  <!-- CCBG Allocation Trend -->
+  <div class="grid-1">
+    <div class="chart-card">
+      <h2>Child Care Block Grant Allocation Trend</h2>
+      <p class="sub">Total annual allocation to New York State &mdash; 2010-11 through 2025-26 &mdash; split by New York City and Rest of State</p>
+      <div class="chart-wrap"><canvas id="ccbgTrendChart" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CCBG County Allocation Trend -->
+  <div class="grid-1">
+    <div class="chart-card">
+      <h2>Child Care Block Grant Allocation by County</h2>
+      <p class="sub">Select one or more counties to compare allocation trends &mdash; 2010-11 through 2025-26</p>
+      <div class="county-selector-wrap">
+        <div class="county-picker">
+          <input type="text" id="ccbgCountySearch" placeholder="Search counties&hellip;">
+          <div class="county-picker-btns">
+            <button onclick="ccbgCountySelectVisible()">Select visible</button>
+            <button onclick="ccbgCountyClear()">Clear</button>
+          </div>
+        </div>
+        <div class="county-checkboxes" id="ccbgCountyBoxes"></div>
+      </div>
+      <div class="chart-wrap"><canvas id="ccbgCountyChart" height="280"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Funding per Eligible Child -->
   <div class="grid-1">
     <div class="chart-card">
       <h2>2025-26 Child Care Block Grant Funding per Eligible Child by County</h2>
@@ -244,19 +311,19 @@
     </div>
   </div>
 
-  <!-- Row 5: Coverage Rate + Eligible vs Enrolled scatter -->
-  <div class="grid-2">
-    <div class="chart-card">
-      <h2>Child Care Assistance Program Coverage Rate by County</h2>
-      <p class="sub">Dec 2025 enrolled children as % of 2025-26 eligible estimate &mdash; all counties including New York City</p>
-      <div class="chart-wrap"><canvas id="coverageChart" height="380"></canvas></div>
-    </div>
+  <!-- Eligible Children vs. Allocation -->
+  <div class="grid-1">
     <div class="chart-card">
       <h2>Eligible Children vs. Child Care Block Grant Allocation</h2>
       <p class="sub">Bubble size = funding per eligible child &mdash; larger bubble = more $ per eligible child. Excludes New York City for scale.</p>
       <div class="chart-wrap"><canvas id="scatterChart" height="380"></canvas></div>
     </div>
   </div>
+
+  </div><!-- end tab-funding -->
+
+  <!-- Tab 3: County Lookup -->
+  <div class="tab-pane" id="tab-lookup">
 
   <!-- County Status Table -->
   <div class="table-card">
@@ -290,6 +357,8 @@
       </table>
     </div>
   </div>
+
+  </div><!-- end tab-lookup -->
 
 </div>
 
@@ -333,6 +402,27 @@ const DATA = {
 
   ccbgROS: {"eligible":588450.36,"allocation":693782177.0,"fundingPerChild":1178.9986}
 };
+
+// ===================== TABS =====================
+function showTab(name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelector('.tab-btn[data-tab="' + name + '"]').classList.add('active');
+  // Move map container to the appropriate tab slot and set mode
+  const mapEls = [document.getElementById('mapContainer'), document.getElementById('legendStatus'), document.getElementById('legendFunding')];
+  if (name === 'funding') {
+    const slot = document.getElementById('mapSlotFund');
+    mapEls.forEach(el => slot.appendChild(el));
+    setMapMode('funding');
+  } else if (name === 'enrollment') {
+    const slot = document.getElementById('mapSlotEnroll');
+    mapEls.forEach(el => slot.appendChild(el));
+    setMapMode('status');
+  }
+  // Allow hidden charts to re-render at correct size
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+}
 
 // ===================== HELPERS =====================
 const fmt = n => n.toLocaleString();
@@ -813,6 +903,18 @@ function setMapMode(mode) {
     });
 })();
 
+// ===================== COUNTY TIER SELECTION =====================
+// Tiers group counties by rough size so both pickers start with a coherent set each load
+const _countyTiers = [
+  ['Nassau', 'Monroe', 'Suffolk', 'Erie', 'Westchester'],        // Large
+  ['Onondaga', 'Schenectady', 'Oneida', 'Rockland', 'Niagara'], // Upper-medium
+  ['Orange', 'Dutchess', 'Broome', 'Steuben', 'Chautauqua'],    // Medium
+  ['Rensselaer', 'Albany', 'Saratoga', 'Jefferson', 'Ontario'], // Lower-medium
+  ['Clinton', 'Sullivan', 'Madison', 'Cattaraugus', 'Tompkins'],// Small
+  ['Lewis', 'Wyoming', 'Yates', 'Schuyler', 'Schoharie'],       // Very small
+];
+const _defaultCounties = _countyTiers[Math.floor(Math.random() * _countyTiers.length)];
+
 // ===================== COUNTY ENROLLMENT HISTORY =====================
 (function buildCountyHistoryChart() {
   const hist = DATA.countyEnrollHistory;
@@ -859,7 +961,7 @@ function setMapMode(mode) {
       scales: {
         x: { ticks: { maxTicksLimit: 16, font: { size: 10 }, maxRotation: 45 } },
         y: { beginAtZero: false,
-             ticks: { callback: v => (v/1000).toFixed(0)+'k', font: { size: 10 } },
+             ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(1).replace(/\.0$/,'')+'k' : v.toLocaleString(), font: { size: 10 } },
              title: { display: true, text: 'Children Enrolled', font: { size: 11 } } }
       }
     }
@@ -887,8 +989,7 @@ function setMapMode(mode) {
     countyHistoryUpdate();
   };
 
-  // Default: 5 large upstate counties
-  ['Monroe', 'Nassau', 'Suffolk', 'Erie', 'Westchester'].forEach(c => {
+  _defaultCounties.forEach(c => {
     const cb = container.querySelector(`input[value="${c}"]`);
     if (cb) cb.checked = true;
   });
@@ -1075,6 +1176,113 @@ function setMapMode(mode) {
         var h = document.documentElement.scrollHeight;
         window.parent.postMessage({ type: 'ccap-height', height: h }, '*');
       }
+// ===================== CCBG ALLOCATION TREND CHART =====================
+(function buildCcbgTrendChart() {
+  const years = ['2010-11','2011-12','2012-13','2013-14','2014-15','2015-16','2016-17','2017-18','2018-19','2019-20','2020-21','2021-22','2022-23','2023-24','2024-25','2025-26'];
+  const nyc = [467558131,472234281,473278027,468354409,501503642,500783843,500203611,490783690,494713530,492116202,492116202,491639215,507172898,617376897,1100409419,1105217823];
+  const ros = [268478278,263802128,264758382,270682000,292567767,293287566,305724390,308298311,311368471,339965799,339965799,340442786,387454103,469073832,695066730,693782177];
+  const total = nyc.map((v, i) => v + ros[i]);
+  const toM = v => +(v / 1e6).toFixed(1);
+  new Chart(document.getElementById('ccbgTrendChart'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'Total', data: total.map(toM), borderColor: '#475874', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3, borderWidth: 2.5 },
+        { label: 'New York City', data: nyc.map(toM), borderColor: '#4b6aeb', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3, borderWidth: 2 },
+        { label: 'Rest of State', data: ros.map(toM), borderColor: '#2980b9', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3, borderWidth: 2, borderDash: [5,3] }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 } } },
+        tooltip: {
+          mode: 'index', intersect: false,
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(0)}M` }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { size: 10 } } },
+        y: { beginAtZero: false,
+             ticks: { callback: v => '$' + v + 'M', font: { size: 10 } },
+             title: { display: true, text: 'Allocation ($M)', font: { size: 10 } } }
+      }
+    }
+  });
+})();
+
+// ===================== CCBG COUNTY ALLOCATION TREND =====================
+(function buildCcbgCountyTrendChart() {
+  const years = ['2010-11','2011-12','2012-13','2013-14','2014-15','2015-16','2016-17','2017-18','2018-19','2019-20','2020-21','2021-22','2022-23','2023-24','2024-25','2025-26'];
+  const countyData = {"Albany":[11570316,11861167,11405642,11303239,12665097,12224492,12529810,12612740,12684090,11889607,11889607,11384147,12179809,12851650,11331490,7225358],"Allegany":[733502,642025,650188,698184,561517,462468,478228,540231,341134,318536,318536,417839,432106,462893,1147925,1149540],"Broome":[4606748,4198681,4505573,4433109,4057382,3941194,4292473,4099813,3839424,4548875,4548875,4745941,5338611,9642524,11511886,11511886],"Cattaraugus":[1635143,1654806,1721394,1742163,1910789,1784102,1767323,1852143,1672522,1714579,1714579,1726665,2103352,3183038,4027514,4027514],"Cayuga":[1318663,1413278,1478882,1547380,1731746,1560530,1557020,1513828,1390417,1474268,1474268,1708117,2056525,2187195,2570583,2610824],"Chautauqua":[4854044,4588579,4633096,4339985,4200437,4074589,4507929,4339146,3943845,4068653,4068653,3831084,4375840,5292413,8316808,8316808],"Chemung":[3452816,3711545,3800641,3832809,3580261,3367685,3318439,3553217,3494006,3926338,3926338,3858010,4095767,3674958,3379343,3902633],"Chenango":[639293,559469,450117,451898,606343,615363,530977,470043,563460,531741,531741,512090,543610,586677,901973,962060],"Clinton":[970174,1000917,971589,830533,960070,1025679,1078132,1021274,926019,911135,911135,1008925,1183672,2914311,3224944,3224944],"Columbia":[1036576,1039930,1097585,1121660,1294424,1357201,1390486,1361956,1368396,1386810,1386810,1314810,1405741,1353177,1221095,1373678],"Cortland":[1035688,982938,819805,1010363,1062880,981662,916503,986170,787987,788367,788367,855546,912548,973624,2416807,2416807],"Delaware":[1166579,1120042,1141424,1207931,1279709,1293110,1308858,1281067,1136863,1150817,1150817,1065740,1151697,1289618,1821237,1921044],"Dutchess":[5432845,6284740,6305845,6390393,6993359,7027520,6958353,6820908,6792227,6834283,6834283,7006075,8107132,8445791,12649040,12649040],"Erie":[26782578,23633975,20481571,23070592,24336843,23150985,24689676,25031809,24639999,26567598,26567598,28938840,34516214,55498328,65962691,65962691],"Essex":[0,320725,392391,366067,392616,438539,424742,381422,402191,493539,493539,511244,519598,478738,992114,998654],"Franklin":[1046359,1013580,1056643,1039648,938975,912879,1032700,981188,992357,1308452,1308452,1111160,1156112,1077529,1922027,2028580],"Fulton":[645371,597717,751622,554724,545317,680865,548501,440321,603072,487651,487651,415219,425080,496481,1493351,1493351],"Genesee":[1180975,867111,747194,944133,1051650,968092,1019950,1042410,1098778,1012426,1012426,824195,877993,919528,1713141,1798818],"Greene":[525650,469862,457273,467365,513475,506627,441512,420114,490672,463652,463652,495191,527668,531245,473896,531169],"Hamilton":[0,0,0,0,0,0,0,0,0,0,0,25222,26539,76283,163386,163386],"Herkimer":[830535,870491,885766,846672,941984,950743,941607,900190,928391,899589,899589,918431,1054301,1084129,2215874,2215874],"Jefferson":[2526465,2464858,2467861,2386245,1972161,1553274,1485052,1840812,1458348,1662872,1662872,1812885,2154153,4013461,5734876,5734876],"Lewis":[379369,342408,345895,340589,309023,290537,346992,322785,267722,260202,260202,242886,268567,379343,775188,775188],"Livingston":[1155009,1072438,1064898,1068602,1192450,1251332,1360374,1393886,1450725,1503507,1503507,1524146,1603461,2419738,3218396,3218396],"Madison":[885272,821098,696893,701591,841557,795233,783088,799901,740435,853952,853952,942338,1145015,2672372,2697868,2697868],"Monroe":[34287282,35160270,35248878,34523538,36259399,36174056,36308375,35942061,35995542,39124255,39124255,41260022,47388264,62518571,90240405,90240405],"Montgomery":[794731,737628,744251,681507,703648,788742,817841,755946,781814,886437,886437,919324,1164706,4620131,4178137,4178137],"Nassau":[29108250,30099398,32746616,35078346,44065330,46948574,52683008,54893347,58158442,66981253,66981253,63145908,73178325,79896326,130005918,130005918],"Niagara":[3032192,3216205,3222094,2580331,2267598,2207821,2712468,2573480,2714609,3257014,3257014,3095710,3125851,8832976,11314373,11314373],"Oneida":[6761892,6530626,6502272,6303987,6646229,6753556,6955194,6719705,7425627,7768536,7768536,7595552,8248495,8100136,17032118,17032118],"Onondaga":[13887879,13263701,13720492,14283861,16336953,16817423,17822423,17992125,18365016,20306934,20306934,21631785,24113644,26526586,44547673,44547673],"Ontario":[1983759,1850665,1910295,2006382,1749549,1594578,1924272,1894067,1963430,2366232,2366232,2205311,2468170,3189687,5967093,5967093],"Orange":[6859382,6452497,6300886,6330743,6948345,6739018,6173054,6731511,6813484,7170256,7170256,7303769,7952654,7935308,13420055,13420055],"Orleans":[1111060,1075817,1041178,899226,924577,1013197,795269,661640,628584,667944,667944,727403,798597,801098,715275,881084],"Oswego":[1718320,1878871,1917739,1958615,2387615,2195704,2265631,2293058,2304583,2356841,2356841,2400370,2697291,2745026,4470784,4490510],"Otsego":[736868,785780,818187,840235,951105,944856,885268,819873,793442,824702,824702,874665,915420,890961,1668262,1694458],"Putnam":[734837,820850,808318,813523,900437,937374,964147,1002044,1113416,1138456,1138456,901597,787163,683606,634352,884244],"Rensselaer":[3340527,3057577,3258390,3549018,4146750,4175360,4230106,3838998,3644155,3864401,3864401,3890048,4023733,4142721,8588196,8588196],"Rockland":[7389054,7555981,7624896,7861603,8465441,8288686,7483024,8079225,7894794,8726469,8726469,8677926,8818907,8691162,9890281,11127092],"St Lawrence":[2128750,2073694,2091600,1793260,1871243,1853340,1689024,1424811,1190261,1198035,1198035,1425258,1613479,1929474,3126425,3256893],"Saratoga":[2464097,1782639,2105564,2159677,1896409,1694157,2097429,2044840,1745914,2188623,2188623,2014242,1834696,3743395,5847545,5847545],"Schenectady":[5516346,5406752,5400580,5467331,5985825,6202577,6699791,6440034,6525737,7110437,7110437,7412505,8589126,10949211,17662210,17662210],"Schoharie":[566285,539979,523229,585758,599716,566831,606054,608705,501490,493080,493080,526111,599977,662465,577784,627128],"Schuyler":[604676,507450,472582,446926,443186,373895,344714,438127,443685,530074,530074,483271,507264,510991,1005660,1005660],"Seneca":[436199,279965,395207,356275,326528,427915,436223,395376,396566,427131,427131,421808,488330,1326242,1733497,1733497],"Steuben":[2742573,2104408,2027701,2425140,2223038,2292949,2343658,2322672,2256621,2175278,2175278,2491567,3234404,9954012,10515668,10515668],"Suffolk":[32311723,29932213,29788497,30783444,31364169,31226627,32542977,32816035,32105417,35457728,35457728,36249082,43072606,42229693,74584235,74584235],"Sullivan":[1526266,1434926,1644299,1721844,1840133,1807279,1673476,1769463,1705972,1684921,1684921,1661219,1771022,1730504,2230983,2459965],"Tioga":[1278602,1259413,1332809,1337481,1468569,1467577,1362434,1277419,1189239,1203170,1203170,1179064,1302318,1357458,2618504,2618504],"Tompkins":[1873131,1978310,1925694,1992675,2263595,2209167,2171489,1977163,1774206,1882152,1882152,1997829,2032672,2125452,4694291,4694291],"Ulster":[3605022,3342066,3341932,3467984,3753499,3866823,3999943,4102342,4075409,4401600,4401600,3845480,4121059,4198045,3733807,2768074],"Warren":[1551335,1278324,1266539,1427402,1317215,1413048,1441874,1422415,1413776,1268396,1268396,1071747,1082811,1060373,1012387,1301494],"Washington":[1172799,1207735,1179410,872133,874567,1050377,927369,799120,991469,1066265,1066265,966375,1031538,1012325,908950,1137147],"Wayne":[963849,997247,1022173,1032914,1163145,1025221,872329,1032991,1058133,1345060,1345060,1261296,1357883,1338884,2761793,2790907],"Westchester":[22680065,24844695,25130444,25631044,27775594,28353404,30099875,30684083,32742502,36337248,36337248,34879382,40153882,41876461,65100785,65100785],"Wyoming":[399630,418595,421639,424813,472604,488005,521181,399893,386003,406979,406979,393604,459657,495116,1347568,1347568],"Yates":[500927,395471,494203,349109,235691,174728,165745,138368,256053,292443,292443,336810,359048,494392,1048263,1048263]};
+  const toM = v => +(v / 1e6).toFixed(2);
+  const allCounties = Object.keys(countyData).sort();
+  const palette = ['#475874','#ea734e','#77a464','#c0392b','#4b6aeb','#2980b9','#16a085','#d4ac0d','#884ea0','#717d7e','#1abc9c','#e74c3c','#f39c12','#2e86c1','#a93226'];
+
+  const container = document.getElementById('ccbgCountyBoxes');
+  allCounties.forEach(county => {
+    const lbl = document.createElement('label');
+    lbl.className = 'county-check-label';
+    lbl.innerHTML = `<input type="checkbox" value="${county}" onchange="ccbgCountyUpdate()"> ${county}`;
+    container.appendChild(lbl);
+  });
+
+  document.getElementById('ccbgCountySearch').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    container.querySelectorAll('label').forEach(l => {
+      l.style.display = l.textContent.trim().toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+
+  const chart = new Chart(document.getElementById('ccbgCountyChart'), {
+    type: 'line',
+    data: { labels: years, datasets: [] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 14 } },
+        tooltip: { mode: 'index', intersect: false,
+          callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(1) + 'M' } }
+      },
+      scales: {
+        x: { ticks: { font: { size: 10 } } },
+        y: { beginAtZero: false,
+             ticks: { callback: v => '$' + v.toFixed(0) + 'M', font: { size: 10 } },
+             title: { display: true, text: 'Allocation ($M)', font: { size: 11 } } }
+      }
+    }
+  });
+
+  window.ccbgCountyUpdate = function() {
+    const checked = [...container.querySelectorAll('input:checked')].map(i => i.value);
+    chart.data.datasets = checked.map((county, i) => ({
+      label: county,
+      data: countyData[county].map(toM),
+      borderColor: palette[i % palette.length],
+      backgroundColor: 'transparent',
+      tension: 0.3, pointRadius: 0, borderWidth: 2
+    }));
+    chart.update();
+  };
+
+  window.ccbgCountySelectVisible = function() {
+    container.querySelectorAll('label:not([style*="display: none"]) input').forEach(cb => cb.checked = true);
+    ccbgCountyUpdate();
+  };
+
+  window.ccbgCountyClear = function() {
+    container.querySelectorAll('input').forEach(cb => cb.checked = false);
+    ccbgCountyUpdate();
+  };
+
+  _defaultCounties.forEach(c => {
+    const cb = container.querySelector(`input[value="${c}"]`);
+    if (cb) cb.checked = true;
+  });
+  ccbgCountyUpdate();
+})();
+
       window.addEventListener('load', function() {
         setTimeout(_ccapReportHeight, 800);
         setTimeout(_ccapReportHeight, 2000);
